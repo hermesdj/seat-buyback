@@ -23,16 +23,14 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 namespace H4zz4rdDev\Seat\SeatBuyback\Http\Controllers;
 
 use H4zz4rdDev\Seat\SeatBuyback\Exceptions\ItemParserBadFormatException;
-use H4zz4rdDev\Seat\SeatBuyback\Exceptions\NoMarketDataFoundException;
-use H4zz4rdDev\Seat\SeatBuyback\Exceptions\SettingsServiceException as SettingsServiceExceptionAlias;
+use H4zz4rdDev\Seat\SeatBuyback\Helpers;
 use H4zz4rdDev\Seat\SeatBuyback\Services\ItemService;
 use H4zz4rdDev\Seat\SeatBuyback\Services\SettingsService;
 use Illuminate\Http\Request;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
+use RecursiveTree\Seat\PricesCore\Exceptions\PriceProviderException;
 use Seat\Web\Http\Controllers\Controller;
-use H4zz4rdDev\Seat\SeatBuyback\Helpers;
 
 /**
  * Class BuybackController.
@@ -46,14 +44,13 @@ class BuybackController extends Controller
     /**
      * @var ItemService
      */
-    public $itemService;
+    public ItemService $itemService;
 
     /**
      * @var SettingsService
      */
-    public $settingsService;
+    public SettingsService $settingsService;
 
-    public int $maxAllowedItems;
 
     /**
      * Constructor
@@ -62,21 +59,19 @@ class BuybackController extends Controller
     {
         $this->itemService = $itemService;
         $this->settingsService = $settingsService;
-        $this->maxAllowedItems = $settingsService->getMaxAllowedItems();
     }
 
     /**
      * @return View
      */
-    public function getHome() : View
+    public function getHome(): View
     {
         return view('buyback::buyback', [
-            'maxAllowedItems' => $this->maxAllowedItems
+            'maxAllowedItems' => $this->settingsService->getMaxAllowedItems()
         ]);
     }
 
     /**
-     * @throws SettingsServiceExceptionAlias
      */
     public function checkItems(Request $request)
     {
@@ -87,12 +82,12 @@ class BuybackController extends Controller
         try {
             $parsedItems = $this->itemService->parseEveItemData($request->get('items'));
 
-            if($parsedItems == null) {
+            if ($parsedItems == null) {
                 return redirect('buyback')->withErrors(
                     ['errors' => trans('buyback::global.error_price_provider_down')]);
             }
 
-            if(!array_key_exists("parsed", $parsedItems)) {
+            if (!array_key_exists("parsed", $parsedItems)) {
                 return redirect('buyback')->withErrors(['errors' => trans('buyback::global.error_empty_item_field')]);
             }
 
@@ -105,22 +100,26 @@ class BuybackController extends Controller
 
             $finalPrice = Helpers\PriceCalculationHelper::calculateFinalPrice($parsedItems["parsed"]);
 
+            Log::debug(print_r($parsedItems, true));
+
             return view('buyback::buyback_check', [
                 'eve_item_data' => $parsedItems,
-                'maxAllowedItems' => $this->maxAllowedItems,
+                'maxAllowedItems' => $this->settingsService->getMaxAllowedItems(),
                 'finalPrice' => $finalPrice,
-                'contractTo' => $this->settingsService->get("admin_contract_contract_to"),
-                'contractExpiration' => $this->settingsService->get("admin_contract_expiration"),
+                'contractTo' => $this->settingsService->getAdminContractTo(),
+                'contractExpiration' => $this->settingsService->getAdminContractExpiration(),
                 'contractId' => Helpers\MiscHelper::generateRandomString(self::MaxContractIdLength)
             ]);
 
-        } catch (NoMarketDataFoundException $e) {
-            return redirect('buyback')->withErrors(
-                ['errors' => trans('buyback::global.error_price_provider_down')]
-            );
         } catch (ItemParserBadFormatException $e) {
+            Log::error($e->getMessage());
             return redirect('buyback')->withErrors(
                 ['errors' => trans('buyback::global.error_item_parser_format')]
+            );
+        } catch (PriceProviderException $e) {
+            Log::error($e->getMessage());
+            return redirect('buyback')->withErrors(
+                ['errors' => trans('buyback::global.error_price_provider_down')]
             );
         }
     }

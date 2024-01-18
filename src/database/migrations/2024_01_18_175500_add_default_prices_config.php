@@ -1,5 +1,6 @@
 <?php
 
+
 /*
 This file is part of SeAT
 
@@ -20,33 +21,41 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
-namespace H4zz4rdDev\Seat\SeatBuyback\Helpers;
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Support\Facades\DB;
 
-use H4zz4rdDev\Seat\SeatBuyback\Item\PriceableEveItem;
-use H4zz4rdDev\Seat\SeatBuyback\Models\BuybackMarketConfig;
-
-/**
- * Class PriceCalculationHelper
- *
- * @package H4zz4rdDev\Seat\SeatBuyback\Helpers
- */
-class PriceCalculationHelper
+class AddDefaultPricesConfig extends Migration
 {
 
     /**
-     * @param array $itemData
-     * @return float|null
+     * Run the migrations.
+     *
+     * @return void
      */
-    public static function calculateFinalPrice(array $itemData): ?float
+    public function up(): void
     {
+        DB::table('buyback_admin_config')->insert([
+            'name' => 'admin_allow_default_prices',
+            'value' => 'false'
+        ]);
 
-        $finalPrice = 0;
+        DB::table('buyback_admin_config')->insert([
+            'name' => 'admin_default_prices_percentage',
+            'value' => 0
+        ]);
 
-        foreach ($itemData as $item) {
-            $finalPrice += $item["typeSum"];
-        }
+        DB::table('buyback_admin_config')->insert([
+            'name' => 'admin_default_prices_operation_type',
+            'value' => 0
+        ]);
+    }
 
-        return $finalPrice;
-
+    /**
+     * Reverse the migrations.
+     *
+     * @return void
+     */
+    public function down(): void
+    {
     }
 }

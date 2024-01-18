@@ -22,22 +22,24 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 namespace H4zz4rdDev\Seat\SeatBuyback\Http\Controllers;
 
-use Cassandra\Set;
 use H4zz4rdDev\Seat\SeatBuyback\Exceptions\DiscordServiceCurlException;
+use H4zz4rdDev\Seat\SeatBuyback\Exceptions\DiscordServiceWebhookUrlNotFoundException;
+use H4zz4rdDev\Seat\SeatBuyback\Exceptions\SettingsServiceException;
+use H4zz4rdDev\Seat\SeatBuyback\Models\BuybackContract;
 use H4zz4rdDev\Seat\SeatBuyback\Services\DiscordService;
 use H4zz4rdDev\Seat\SeatBuyback\Services\SettingsService;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Seat\Web\Http\Controllers\Controller;
-use H4zz4rdDev\Seat\SeatBuyback\Models\BuybackContract;
 
 /**
  * Class BuybackContractController
  *
  * @package H4zz4rdDev\Seat\SeatBuyback\Http\Controllers
  */
-class BuybackContractController extends Controller {
+class BuybackContractController extends Controller
+{
 
     private SettingsService $settingsService;
 
@@ -66,7 +68,8 @@ class BuybackContractController extends Controller {
     /**
      * @return mixed
      */
-    public function getCharacterContracts () {
+    public function getCharacterContracts()
+    {
 
         //Todo Refactor contractIssuer to userID
         $openContracts = BuybackContract::where('contractStatus', '=', 0)
@@ -79,7 +82,7 @@ class BuybackContractController extends Controller {
             ->orderBy('created_at', 'DESC')
             ->get();
 
-        return view('buyback::buyback_my_contracts',  [
+        return view('buyback::buyback_my_contracts', [
             'openContracts' => $openContracts,
             'closedContracts' => $closedContracts
         ]);
@@ -88,7 +91,8 @@ class BuybackContractController extends Controller {
     /**
      * @return mixed
      */
-    public function insertContract(Request $request) {
+    public function insertContract(Request $request)
+    {
 
         $request->validate([
             'contractId' => 'required',
@@ -103,7 +107,7 @@ class BuybackContractController extends Controller {
         $contractFinalPrice = (int)$request->get('contractFinalPrice');
         $contract->save();
 
-        if((bool)$this->settingsService->get("admin_discord_status")) {
+        if ((bool)$this->settingsService->get("admin_discord_status")) {
             try {
                 $this->discordService->sendMessage
                 (
@@ -111,9 +115,10 @@ class BuybackContractController extends Controller {
                     Auth::user()->main_character_id,
                     $contract->contractId,
                     $contractFinalPrice,
-                    is_countable(json_decode((string) $contract->contractData, true, 512, JSON_THROW_ON_ERROR)['parsed']) ? count(json_decode((string) $contract->contractData, true, 512, JSON_THROW_ON_ERROR)['parsed']) : 0
+                    is_countable(json_decode((string)$contract->contractData, true, 512, JSON_THROW_ON_ERROR)['parsed']) ? count(json_decode((string)$contract->contractData, true, 512, JSON_THROW_ON_ERROR)['parsed']) : 0
                 );
-            } catch (DiscordServiceCurlException $e) {
+            } catch (DiscordServiceCurlException|DiscordServiceWebhookUrlNotFoundException|SettingsServiceException $e) {
+                Log::error("Discord error " . $e->getMessage());
                 return redirect()->back()
                     ->with(['error' => trans('buyback::global.admin_discord_error_curl')]);
             }
@@ -126,10 +131,9 @@ class BuybackContractController extends Controller {
     /**
      * @return mixed
      */
-    public function deleteContract (Request $request, string $contractId)
+    public function deleteContract(Request $request, string $contractId)
     {
-        if(!$request->isMethod('get') || $contractId === '')
-        {
+        if (!$request->isMethod('get') || $contractId === '') {
             return redirect()->back()
                 ->with(['error' => trans('buyback::global.error')]);
         }
@@ -143,16 +147,15 @@ class BuybackContractController extends Controller {
     /**
      * @return mixed
      */
-    public function succeedContract (Request $request, string $contractId)
+    public function succeedContract(Request $request, string $contractId)
     {
-        if(!$request->isMethod('get') || $contractId === '')
-        {
+        if (!$request->isMethod('get') || $contractId === '') {
             return redirect()->back()
                 ->with(['error' => trans('buyback::global.error')]);
         }
 
         $contract = BuybackContract::where('contractId', '=', $contractId)->first();
-        if(!$contract->contractStatus) {
+        if (!$contract->contractStatus) {
 
             $contract->contractStatus = 1;
             $contract->save();

@@ -22,13 +22,9 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 namespace H4zz4rdDev\Seat\SeatBuyback\Http\Controllers;
 
-use H4zz4rdDev\Seat\SeatBuyback\Models\BuyBackPriceProvider;
 use H4zz4rdDev\Seat\SeatBuyback\Services\SettingsService;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Seat\Eveapi\Models\Sde\InvType;
 use Seat\Web\Http\Controllers\Controller;
-use H4zz4rdDev\Seat\SeatBuyback\Models\BuybackMarketConfig;
 
 /**
  * Class BuybackAdminController.
@@ -40,7 +36,7 @@ class BuybackAdminController extends Controller
     /**
      * @var SettingsService
      */
-    public $settingsService;
+    public SettingsService $settingsService;
 
     public function __construct(SettingsService $settingsService)
     {
@@ -53,9 +49,7 @@ class BuybackAdminController extends Controller
     public function getHome()
     {
         return view('buyback::buyback_admin', [
-            'settings' => $this->settingsService->getAll(),
-            'marketConfigs' => BuybackMarketConfig::orderBy('typeName', 'asc')->get(),
-            'priceProvider' => BuyBackPriceProvider::orderBy('name', 'asc')->get()
+            'settings' => $this->settingsService->getAll()
         ]);
     }
 
@@ -66,11 +60,13 @@ class BuybackAdminController extends Controller
     {
 
         $request->validate([
-            'admin_price_cache_time' => 'required|numeric|between:300,3600',
             'admin_max_allowed_items' => 'required|numeric|between:1,50',
-            'admin_price_provider_url' => 'required|url',
             'admin_contract_contract_to' => 'required|max:128',
-            'admin_contract_expiration' => 'required|max:32'
+            'admin_contract_expiration' => 'required|max:32',
+            'admin_price_provider' => 'required|numeric',
+            'admin_allow_default_prices' => 'boolean',
+            'admin_default_prices_percentage' => 'numeric|between:1,100',
+            'admin_default_prices_operation_type' => 'numeric|between:0,1'
         ]);
 
         if ($request->all() == null) {
@@ -92,7 +88,7 @@ class BuybackAdminController extends Controller
         }
 
         $request->validate([
-            'admin_discord_status'=> 'required|numeric|between:0,1',
+            'admin_discord_status' => 'required|numeric|between:0,1',
             'admin_discord_webhook_url' => 'required|url',
             'admin_discord_webhook_bot_name' => 'required|max:32|min:3',
             'admin_discord_webhook_color' => [
@@ -101,7 +97,7 @@ class BuybackAdminController extends Controller
             ]
         ]);
 
-        if($this->getDomainName($request->get('admin_discord_webhook_url')) != 'discord.com') {
+        if ($this->getDomainName($request->get('admin_discord_webhook_url')) != 'discord.com') {
             return redirect()->back()
                 ->with(['error' => trans('buyback::global.admin_discord_error_url')]);
         }
@@ -112,10 +108,11 @@ class BuybackAdminController extends Controller
             ->with('success', trans('buyback::global.admin_success_config'));
     }
 
-    function getDomainName($url){
-        $pieces = parse_url((string) $url);
+    function getDomainName($url)
+    {
+        $pieces = parse_url((string)$url);
         $domain = $pieces['host'] ?? '';
-        if(preg_match('/(?P<domain>[a-z0-9][a-z0-9\-]{1,63}\.[a-z\.]{2,6})$/i', $domain, $regs)){
+        if (preg_match('/(?P<domain>[a-z0-9][a-z0-9\-]{1,63}\.[a-z\.]{2,6})$/i', $domain, $regs)) {
             return $regs['domain'];
         }
         return FALSE;

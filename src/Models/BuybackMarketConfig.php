@@ -23,14 +23,27 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 namespace H4zz4rdDev\Seat\SeatBuyback\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\DB;
 
 /**
  * Class BuybackMarketConfig
  *
  * @package H4zz4rdDev\Seat\SeatBuyback\Models
  */
-class BuybackMarketConfig extends Model {
+class BuybackMarketConfig extends Model
+{
+    public float $price = 0;
+    public int $percentage = 0;
+    public int $marketOperationType = 0;
+
+    public function getPercentage(): float
+    {
+        return $this->percentage / 100;
+    }
+
+    public function getMarketOperator(): int
+    {
+        return $this->marketOperationType ? -1 : 1;
+    }
 
     /**
      * The table associated with the model.

@@ -23,14 +23,17 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 namespace H4zz4rdDev\Seat\SeatBuyback\Services;
 
 use H4zz4rdDev\Seat\SeatBuyback\Exceptions\SettingsServiceException;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Class SettingsService
  */
-class SettingsService {
+class SettingsService
+{
 
-    private $_settings;
+    private array $_settings;
 
     public function __construct()
     {
@@ -38,37 +41,42 @@ class SettingsService {
     }
 
     /**
+     * @param string $setting
      * @return string
      * @throws SettingsServiceException
      */
     public function get(string $setting): string
     {
         if (!array_key_exists($setting, $this->_settings)) {
-            throw new SettingsServiceException(trans('buyback::global.admin_setting_error', [ 'message' => $setting]));
+            throw new SettingsServiceException(trans('buyback::global.admin_setting_error', ['message' => $setting]));
         }
         return $this->_settings[$setting];
     }
 
     /**
+     * @param string $key
+     * @param string $value
      * @return void
      * @throws SettingsServiceException
      */
     public function set(string $key, string $value): void
     {
         if (!array_key_exists($key, $this->_settings)) {
-            throw new SettingsServiceException(trans('buyback::global.admin_setting_error', [ 'message' => $key]));
+            throw new SettingsServiceException(trans('buyback::global.admin_setting_error', ['message' => $key]));
         }
 
         try {
             DB::table('buyback_admin_config')
                 ->where('name', $key)
                 ->update(['value' => $value]);
+            $this->_settings[$key] = $value;
         } catch (QueryException $e) {
-            \Log::error('QueryException: ' . $e->getMessage());
+            Log::error('QueryException: ' . $e->getMessage());
         }
     }
 
     /**
+     * @param array $newSettings
      * @return void
      */
     public function setAll(array $newSettings): void
@@ -86,7 +94,7 @@ class SettingsService {
                         $this->set($key, $value);
                     }
                 } catch (SettingsServiceException $e) {
-                    \Log::error('SettingException: ' . $e->getMessage());
+                    Log::error('SettingException: ' . $e->getMessage());
                 }
             }
         }
@@ -103,9 +111,39 @@ class SettingsService {
     /**
      * @return int
      */
-    public function getMaxAllowedItems () : int
+    public function getMaxAllowedItems(): int
     {
-        return $this->_settings["admin_max_allowed_items"];
+        return intval($this->_settings["admin_max_allowed_items"]);
+    }
+
+    public function getPriceProviderId(): int
+    {
+        return intval($this->_settings["admin_price_provider"]);
+    }
+
+    public function getAdminContractTo(): string
+    {
+        return $this->_settings["admin_contract_contract_to"];
+    }
+
+    public function getAdminContractExpiration(): int
+    {
+        return intval($this->_settings["admin_contract_expiration"]);
+    }
+
+    public function defaultPricesAllowed(): bool
+    {
+        return boolval($this->_settings["admin_allow_default_prices"]);
+    }
+
+    public function defaultPricesPercentage(): int
+    {
+        return intval($this->_settings["admin_default_prices_percentage"]);
+    }
+
+    public function defaultPricesMarketOperationType(): int
+    {
+        return intval($this->_settings["admin_default_prices_operation_type"]);
     }
 
     /**
@@ -121,7 +159,7 @@ class SettingsService {
                 $this->_settings[$item->name] = $item->value;
             }
         } catch (QueryException $e) {
-            \Log::error('QueryException: ' . $e->getMessage());
+            Log::error('QueryException: ' . $e->getMessage());
         }
     }
 }

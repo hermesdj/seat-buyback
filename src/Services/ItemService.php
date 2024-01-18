@@ -23,157 +23,128 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 namespace H4zz4rdDev\Seat\SeatBuyback\Services;
 
 use H4zz4rdDev\Seat\SeatBuyback\Exceptions\ItemParserBadFormatException;
-use H4zz4rdDev\Seat\SeatBuyback\Exceptions\SettingsServiceException;
-use H4zz4rdDev\Seat\SeatBuyback\Factories\PriceProviderFactory;
-use H4zz4rdDev\Seat\SeatBuyback\Helpers\PriceCalculationHelper;
-use H4zz4rdDev\Seat\SeatBuyback\Provider\IPriceProvider;
+use H4zz4rdDev\Seat\SeatBuyback\Item\PriceableEveItem;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
-use Seat\Eveapi\Models\Sde\InvType;
+use Illuminate\Support\Facades\Log;
+use RecursiveTree\Seat\PricesCore\Exceptions\PriceProviderException;
+use RecursiveTree\Seat\PricesCore\Facades\PriceProviderSystem;
+use RecursiveTree\Seat\TreeLib\Parser\Parser;
 
 /**
  * Class ItemService
  */
 class ItemService
 {
-    private $priceProvider;
+    private SettingsService $settingsService;
+    private PriceCalculationService $priceService;
 
     /**
-     * @throws SettingsServiceException
      */
-    public function __construct(PriceProviderFactory $priceProviderFactory)
+    public function __construct(SettingsService $settingsService, PriceCalculationService $priceService)
     {
-        $this->priceProvider = $priceProviderFactory->getPriceProvider();
+        $this->settingsService = $settingsService;
+        $this->priceService = $priceService;
     }
 
     /**
-     * @return array|null
+     * @param string $item_string
+     * @return array
      * @throws ItemParserBadFormatException
+     * @throws PriceProviderException
      */
-    public function parseEveItemData(string $item_string): ?array
+    public function parseEveItemData(string $item_string): array
     {
         if (empty($item_string)) {
-            return null;
+            throw new ItemParserBadFormatException("Empty string not supported");
         }
 
-        $parsedRawData = $this->parseRawData($item_string);
+        $item_string = preg_replace('/\*\t/', "\t", $item_string);
 
-        foreach ($parsedRawData as $key => $item) {
-            $priceData = $this->priceProvider->getItemPrice($item["typeID"]);
+        $parser_result = Parser::parseItems($item_string, PriceableEveItem::class);
 
-            if($priceData == null) {
-                return null;
-            }
-
-            $parsedRawData[$key]["price"] = $priceData->getItemPrice();
-            $parsedRawData[$key]["sum"] = PriceCalculationHelper::calculateItemPrice($item["typeID"],
-                $parsedRawData[$key]["quantity"], $priceData);
+        if ($parser_result == null || $parser_result->items->isEmpty()) {
+            return throw new ItemParserBadFormatException("Could not parse provided string or item list is empty");
         }
 
-        return $this->categorizeItems($parsedRawData);
+        $priceProviderId = $this->settingsService->getPriceProviderId();
+
+        if ($priceProviderId == null) {
+            throw new PriceProviderException("Price provider not configured");
+        }
+
+        PriceProviderSystem::getPrices($priceProviderId, $parser_result->items);
+
+        foreach ($parser_result->items as $item) {
+            $this->priceService->calculateItemPrice($item);
+        }
+
+        return $this->categorizeItems($parser_result->items);
     }
 
     /**
+     * @param Collection<PriceableEveItem> $itemData
      * @return array|null
      */
-    private function categorizeItems(array $itemData): ?array
+    private function categorizeItems(Collection $itemData): ?array
     {
         $parsedItems = [];
         foreach ($itemData as $key => $item) {
-
             $result = DB::table('invTypes as it')
                 ->join('invGroups as ig', 'it.groupID', '=', 'ig.GroupID')
-                ->rightJoin('buyback_market_config as bmc', 'it.typeID', '=', 'bmc.typeId')
                 ->select(
                     'it.typeID as typeID',
                     'it.typeName as typeName',
                     'it.description as description',
                     'ig.GroupName as groupName',
-                    'ig.GroupID as groupID',
-                    'bmc.percentage',
-                    'bmc.marketOperationType'
+                    'ig.GroupID as groupID'
                 )
-                ->where('it.typeName', '=', $key)
+                ->where('it.typeID', '=', $item->getTypeID())
                 ->first();
 
-            if (empty($result)) {
+            $marketConfig = DB::table('buyback_market_config as bmc')
+                ->select(
+                    'percentage',
+                    'marketOperationType'
+                )
+                ->where('bmc.typeId', $item->getTypeID())
+                ->first();
 
+            if (empty($marketConfig)) {
+                $marketConfig = [
+                    'percentage' => $this->settingsService->defaultPricesPercentage(),
+                    'marketOperationType' => $this->settingsService->defaultPricesMarketOperationType(),
+                ];
+            }
+
+            if (empty($result)) {
+                Log::debug("Ignore item .$item->typeModel->typeName");
                 $parsedItems["ignored"][] = [
-                    'ItemId' => $item["typeID"],
-                    'ItemName' => $item["name"],
-                    'ItemQuantity' => $item["quantity"]
+                    'ItemId' => $item->getTypeID(),
+                    'ItemName' => $item->typeModel->typeName,
+                    'ItemQuantity' => $item->getAmount()
                 ];
 
                 continue;
             }
 
+            Log::debug(print_r($result, true));
+
             if (!array_key_exists($result->groupID, $parsedItems)) {
-
-                $parsedItems["parsed"][$key]["typeId"] = $item["typeID"];
-                $parsedItems["parsed"][$key]["typeName"] = $item["name"];
-                $parsedItems["parsed"][$key]["typeQuantity"] = $item["quantity"];
-                $parsedItems["parsed"][$key]["typeSum"] = $item["sum"];
-                $parsedItems["parsed"][$key]["groupId"] = $result->groupID;
+                Log::debug("Found item .$item->typeModel->typeName");
+                $parsedItems["parsed"][$key]["typeId"] = $item->typeModel->typeID;
+                $parsedItems["parsed"][$key]["typeName"] = $item->typeModel->typeName;
+                $parsedItems["parsed"][$key]["typeQuantity"] = $item->getAmount();
+                $parsedItems["parsed"][$key]["typeSum"] = $item->sum;
+                $parsedItems["parsed"][$key]["groupId"] = $item->typeModel->groupID;
                 $parsedItems["parsed"][$key]["marketGroupName"] = $result->groupName;
-
                 $parsedItems["parsed"][$key]["marketConfig"] = [
-                    'percentage' => $result->percentage != null ? $result->percentage : 0,
-                    'marketOperationType' => $result->marketOperationType != null ? $result->marketOperationType : 0
+                    'percentage' => $marketConfig["percentage"],
+                    'marketOperationType' => $marketConfig["marketOperationType"]
                 ];
             }
         }
 
         return $parsedItems;
-    }
-
-    /**
-     * @return array|null
-     * @throws ItemParserBadFormatException
-     */
-    private function parseRawData(string $item_string): ?array
-    {
-
-        $sorted_item_data = [];
-
-        foreach (preg_split('/\r\n|\r|\n/', $item_string) as $item) {
-
-            if (strlen($item) < 2) {
-                throw new ItemParserBadFormatException();
-            }
-
-            if(stripos($item, "    ")) {
-                $item_data_details = explode("    ", $item);
-            } elseif (stripos($item, "\t") ) {
-                $item_data_details = explode("\t", $item);
-            } else {
-                throw new ItemParserBadFormatException();
-            }
-
-            $item_name = $item_data_details[0];
-            $item_quantity = null;
-
-            foreach ($item_data_details as $item_data_detail) {
-                if (is_numeric(trim($item_data_detail))) {
-                    $item_quantity = (int)str_replace('.', '', $item_data_detail);
-                }
-            }
-
-            if ($item_quantity == null) {
-                throw new ItemParserBadFormatException();
-            }
-
-            $inv_type = InvType::where('typeName', '=', $item_name)->first();
-
-            if (!array_key_exists($item_name, $sorted_item_data)) {
-                $sorted_item_data[$item_name]["name"] = $item_name;
-                $sorted_item_data[$item_name]["typeID"] = $inv_type->typeID;
-                $sorted_item_data[$item_name]["quantity"] = 0;
-                $sorted_item_data[$item_name]["price"] = 0;
-                $sorted_item_data[$item_name]["sum"] = 0;
-            }
-
-            $sorted_item_data[$item_name]["quantity"] += $item_quantity;
-        }
-
-        return $sorted_item_data;
     }
 }

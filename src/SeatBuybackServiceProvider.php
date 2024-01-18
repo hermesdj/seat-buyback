@@ -21,9 +21,9 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 namespace H4zz4rdDev\Seat\SeatBuyback;
 
-use H4zz4rdDev\Seat\SeatBuyback\Factories\PriceProviderFactory;
 use H4zz4rdDev\Seat\SeatBuyback\Services\DiscordService;
 use H4zz4rdDev\Seat\SeatBuyback\Services\ItemService;
+use H4zz4rdDev\Seat\SeatBuyback\Services\PriceCalculationService;
 use H4zz4rdDev\Seat\SeatBuyback\Services\SettingsService;
 use Seat\Services\AbstractSeatPlugin;
 
@@ -57,9 +57,6 @@ class SeatBuybackServiceProvider extends AbstractSeatPlugin
         // Overload sidebar with your package menu entries
         $this->mergeConfigFrom(__DIR__ . '/Config/Menu/package.sidebar.php', 'package.sidebar');
 
-        // Merge PriceProvider config
-        $this->mergeConfigFrom(__DIR__ . '/Config/PriceProvider/buyback.priceProvider.php', 'buyback.priceProvider');
-
         // Merge Discord config
         $this->mergeConfigFrom(__DIR__ . '/Config/Discord/buyback.discord.php', 'buyback.discord');
 
@@ -77,14 +74,13 @@ class SeatBuybackServiceProvider extends AbstractSeatPlugin
             return new SettingsService();
         });
 
-        // Price Provider Factory
-        $this->app->singleton(PriceProviderFactory::class, function ($app) {
-            return new PriceProviderFactory($app->make(SettingsService::class));
+        $this->app->singleton(PriceCalculationService::class, function ($app) {
+            return new PriceCalculationService($app->make(SettingsService::class));
         });
 
         // Settings Service
         $this->app->singleton(ItemService::class, function ($app) {
-            return new ItemService($app->make(PriceProviderFactory::class));
+            return new ItemService($app->make(SettingsService::class), $app->make(PriceCalculationService::class));
         });
 
         // Discord Service
@@ -179,7 +175,7 @@ class SeatBuybackServiceProvider extends AbstractSeatPlugin
      */
     public function getPackageRepositoryUrl(): string
     {
-        return 'https://github.com/H4zz4rdDev/seat-buyback';
+        return 'https://github.com/hermesdj/seat-buyback';
     }
 
     /**
@@ -203,6 +199,6 @@ class SeatBuybackServiceProvider extends AbstractSeatPlugin
      */
     public function getPackagistVendorName(): string
     {
-        return 'H4zz4rdDev';
+        return 'hermesdj';
     }
 }

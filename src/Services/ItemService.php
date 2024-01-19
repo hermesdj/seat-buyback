@@ -61,10 +61,10 @@ class ItemService
 
         $parser_result = InventoryParser::parseItems($item_string, PriceableEveItem::class);
 
-        if ($parser_result == null || $parser_result->items->isEmpty()) {
+        if ($parser_result->items->isEmpty()) {
             throw new ItemParserBadFormatException("Could not parse provided string or item list is empty");
         }
-
+        
         $priceProviderId = $this->settingsService->getPriceProviderId();
 
         if ($priceProviderId == null) {

@@ -22,9 +22,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 namespace H4zz4rdDev\Seat\SeatBuyback\Helpers;
 
-use H4zz4rdDev\Seat\SeatBuyback\Item\PriceableEveItem;
-use H4zz4rdDev\Seat\SeatBuyback\Models\BuybackMarketConfig;
-
 /**
  * Class PriceCalculationHelper
  *
@@ -48,5 +45,16 @@ class PriceCalculationHelper
 
         return $finalPrice;
 
+    }
+
+    public static function calculateFinalVolume(array $itemData): ?int
+    {
+        $finalVolume = 0;
+
+        foreach ($itemData as $item) {
+            $finalVolume += $item["typeQuantity"] * $item["volume"];
+        }
+
+        return $finalVolume;
     }
 }

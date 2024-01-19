@@ -100,8 +100,6 @@ class BuybackController extends Controller
 
             $finalPrice = Helpers\PriceCalculationHelper::calculateFinalPrice($parsedItems["parsed"]);
 
-            Log::debug(print_r($parsedItems, true));
-
             return view('buyback::buyback_check', [
                 'eve_item_data' => $parsedItems,
                 'maxAllowedItems' => $this->settingsService->getMaxAllowedItems(),

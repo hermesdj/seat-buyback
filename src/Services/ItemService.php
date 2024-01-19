@@ -24,12 +24,12 @@ namespace H4zz4rdDev\Seat\SeatBuyback\Services;
 
 use H4zz4rdDev\Seat\SeatBuyback\Exceptions\ItemParserBadFormatException;
 use H4zz4rdDev\Seat\SeatBuyback\Item\PriceableEveItem;
+use H4zz4rdDev\Seat\SeatBuyback\Parser\InventoryParser;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use RecursiveTree\Seat\PricesCore\Exceptions\PriceProviderException;
 use RecursiveTree\Seat\PricesCore\Facades\PriceProviderSystem;
-use RecursiveTree\Seat\TreeLib\Parser\Parser;
 
 /**
  * Class ItemService
@@ -59,12 +59,10 @@ class ItemService
             throw new ItemParserBadFormatException("Empty string not supported");
         }
 
-        $item_string = preg_replace('/\*\t/', "\t", $item_string);
-
-        $parser_result = Parser::parseItems($item_string, PriceableEveItem::class);
+        $parser_result = InventoryParser::parseItems($item_string, PriceableEveItem::class);
 
         if ($parser_result == null || $parser_result->items->isEmpty()) {
-            return throw new ItemParserBadFormatException("Could not parse provided string or item list is empty");
+            throw new ItemParserBadFormatException("Could not parse provided string or item list is empty");
         }
 
         $priceProviderId = $this->settingsService->getPriceProviderId();
@@ -97,7 +95,8 @@ class ItemService
                     'it.typeName as typeName',
                     'it.description as description',
                     'ig.GroupName as groupName',
-                    'ig.GroupID as groupID'
+                    'ig.GroupID as groupID',
+                    'it.volume as volume'
                 )
                 ->where('it.typeID', '=', $item->getTypeID())
                 ->first();
@@ -138,6 +137,7 @@ class ItemService
                 $parsedItems["parsed"][$key]["typeSum"] = $item->sum;
                 $parsedItems["parsed"][$key]["groupId"] = $item->typeModel->groupID;
                 $parsedItems["parsed"][$key]["marketGroupName"] = $result->groupName;
+                $parsedItems["parsed"][$key]["volume"] = $result->volume;
                 $parsedItems["parsed"][$key]["marketConfig"] = [
                     'percentage' => $marketConfig["percentage"],
                     'marketOperationType' => $marketConfig["marketOperationType"]

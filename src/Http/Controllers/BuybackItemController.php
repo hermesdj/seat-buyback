@@ -40,7 +40,7 @@ class BuybackItemController extends Controller {
     /**
      * @return View
      */
-    public function getHome()
+    public function getHome(): View
     {
         return view('buyback::buyback_item', [
             'marketConfigs' => BuybackMarketConfig::orderBy('typeName', 'asc')->get(),
@@ -48,9 +48,10 @@ class BuybackItemController extends Controller {
     }
 
     /**
-     * @return mixed
+     * @param Request $request
+     * @return RedirectResponse
      */
-    public function addMarketConfig(Request $request)
+    public function addMarketConfig(Request $request): RedirectResponse
     {
 
         $request->validate([
@@ -84,9 +85,11 @@ class BuybackItemController extends Controller {
     }
 
     /**
-     * @return mixed
+     * @param Request $request
+     * @param int $typeId
+     * @return RedirectResponse
      */
-    public function removeMarketConfig(Request $request, int $typeId)
+    public function removeMarketConfig(Request $request, int $typeId): RedirectResponse
     {
 
         if (!$request->isMethod('get') || empty($typeId) || !is_numeric($typeId)) {

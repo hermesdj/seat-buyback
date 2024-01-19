@@ -22,19 +22,27 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 namespace H4zz4rdDev\Seat\SeatBuyback\Http\Controllers;
 
-use Seat\Web\Http\Controllers\Controller;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Seat\Web\Http\Controllers\Controller;
 
 /**
  * Class SearchController.
  *
  * @package H4zz4rdDev\Seat\SeatBuyback\Http\Controllers
  */
-class SearchController extends Controller {
+class SearchController extends Controller
+{
 
-    public function autocomplete(Request $request) {
-        if($request->has('q')) {
+    /**
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function autocomplete(Request $request): JsonResponse
+    {
+        $data = [];
+        if ($request->has('q')) {
             $data = DB::table('invTypes as t')
                 ->join('invGroups as g', 't.groupID', '=', 'g.groupID')
                 ->select(

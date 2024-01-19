@@ -19,6 +19,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
+use Illuminate\Support\Facades\Route;
+
 Route::group([
     'namespace' => 'H4zz4rdDev\Seat\SeatBuyback\Http\Controllers',
     'middleware' => ['web', 'auth', 'locale'],
@@ -34,7 +36,7 @@ Route::group([
 
             // Show buyback calculation results
             Route::post('/')
-                ->name ('buyback.check')
+                ->name('buyback.check')
                 ->uses('BuybackController@checkItems');
 
             // Show characters contracts
@@ -46,25 +48,25 @@ Route::group([
             Route::prefix('/contracts')
                 ->group(function (): void {
 
-                // Show all open contracts
-                Route::get('/')
-                    ->name('buyback.contract')
-                    ->uses('BuybackContractController@getHome');
+                    // Show all open contracts
+                    Route::get('/')
+                        ->name('buyback.contract')
+                        ->uses('BuybackContractController@getHome');
 
-                // Insert new contract
-                Route::post('/insert')
-                    ->name('buyback.contracts.insert')
-                    ->uses('BuybackContractController@insertContract');
+                    // Insert new contract
+                    Route::post('/insert')
+                        ->name('buyback.contracts.insert')
+                        ->uses('BuybackContractController@insertContract');
 
-                // Delete contract
-                Route::get('/delete/{contractId}')
-                    ->name('buyback.contracts.delete')
-                    ->uses('BuybackContractController@deleteContract');
+                    // Delete contract
+                    Route::get('/delete/{contractId}')
+                        ->name('buyback.contracts.delete')
+                        ->uses('BuybackContractController@deleteContract');
 
-                // Succeed contract
-                Route::get('/succeed/{contractId}')
-                    ->name('buyback.contracts.succeed')
-                    ->uses('BuybackContractController@succeedContract');
+                    // Succeed contract
+                    Route::get('/succeed/{contractId}')
+                        ->name('buyback.contracts.succeed')
+                        ->uses('BuybackContractController@succeedContract');
                 });
 
 
@@ -108,6 +110,6 @@ Route::group([
 
     // Select2 autocomplete
     Route::get('/autocomplete')
-        ->name('autocompelte')
+        ->name('autocomplete')
         ->uses('SearchController@autocomplete');
 });

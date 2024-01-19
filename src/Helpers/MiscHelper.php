@@ -31,6 +31,7 @@ namespace H4zz4rdDev\Seat\SeatBuyback\Helpers;
 class MiscHelper
 {
     /**
+     * @param int $length
      * @return string
      */
     public static function generateRandomString(int $length = 25) : string

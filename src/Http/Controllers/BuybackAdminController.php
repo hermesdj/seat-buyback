@@ -23,6 +23,10 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 namespace H4zz4rdDev\Seat\SeatBuyback\Http\Controllers;
 
 use H4zz4rdDev\Seat\SeatBuyback\Services\SettingsService;
+use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Contracts\View\Factory;
+use Illuminate\Contracts\View\View;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Seat\Web\Http\Controllers\Controller;
 
@@ -44,9 +48,9 @@ class BuybackAdminController extends Controller
     }
 
     /**
-     * @return mixed
+     * @return Application|View|Factory
      */
-    public function getHome()
+    public function getHome(): Application|View|Factory
     {
         return view('buyback::buyback_admin', [
             'settings' => $this->settingsService->getAll()
@@ -54,9 +58,10 @@ class BuybackAdminController extends Controller
     }
 
     /**
-     * @return mixed
+     * @param Request $request
+     * @return RedirectResponse
      */
-    public function updateSettings(Request $request)
+    public function updateSettings(Request $request): RedirectResponse
     {
 
         $request->validate([
@@ -80,7 +85,11 @@ class BuybackAdminController extends Controller
             ->with('success', trans('buyback::global.admin_success_config'));
     }
 
-    public function updateDiscordSettings(Request $request)
+    /**
+     * @param Request $request
+     * @return RedirectResponse
+     */
+    public function updateDiscordSettings(Request $request): RedirectResponse
     {
         if ($request->all() == null) {
             return redirect()->back()
@@ -108,7 +117,11 @@ class BuybackAdminController extends Controller
             ->with('success', trans('buyback::global.admin_success_config'));
     }
 
-    function getDomainName($url)
+    /**
+     * @param $url
+     * @return false|string
+     */
+    function getDomainName($url): false|string
     {
         $pieces = parse_url((string)$url);
         $domain = $pieces['host'] ?? '';

@@ -28,9 +28,14 @@ use H4zz4rdDev\Seat\SeatBuyback\Exceptions\SettingsServiceException;
 use H4zz4rdDev\Seat\SeatBuyback\Models\BuybackContract;
 use H4zz4rdDev\Seat\SeatBuyback\Services\DiscordService;
 use H4zz4rdDev\Seat\SeatBuyback\Services\SettingsService;
+use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Contracts\View\Factory;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\View\View;
+use JsonException;
 use Seat\Web\Http\Controllers\Controller;
 
 /**
@@ -52,9 +57,9 @@ class BuybackContractController extends Controller
     }
 
     /**
-     * @return \Illuminate\View\View
+     * @return View
      */
-    public function getHome()
+    public function getHome(): View
     {
         $contracts = BuybackContract::where('contractStatus', '=', 0)
             ->orderBy('created_at', 'desc')
@@ -66,9 +71,9 @@ class BuybackContractController extends Controller
     }
 
     /**
-     * @return mixed
+     * @return Application|View|Factory
      */
-    public function getCharacterContracts()
+    public function getCharacterContracts(): Application|View|Factory
     {
 
         //Todo Refactor contractIssuer to userID
@@ -89,9 +94,12 @@ class BuybackContractController extends Controller
     }
 
     /**
-     * @return mixed
+     * @param Request $request
+     * @return RedirectResponse
+     * @throws SettingsServiceException
+     * @throws JsonException
      */
-    public function insertContract(Request $request)
+    public function insertContract(Request $request): RedirectResponse
     {
 
         $request->validate([
@@ -129,9 +137,11 @@ class BuybackContractController extends Controller
     }
 
     /**
-     * @return mixed
+     * @param Request $request
+     * @param string $contractId
+     * @return RedirectResponse
      */
-    public function deleteContract(Request $request, string $contractId)
+    public function deleteContract(Request $request, string $contractId): RedirectResponse
     {
         if (!$request->isMethod('get') || $contractId === '') {
             return redirect()->back()
@@ -145,9 +155,11 @@ class BuybackContractController extends Controller
     }
 
     /**
-     * @return mixed
+     * @param Request $request
+     * @param string $contractId
+     * @return RedirectResponse
      */
-    public function succeedContract(Request $request, string $contractId)
+    public function succeedContract(Request $request, string $contractId): RedirectResponse
     {
         if (!$request->isMethod('get') || $contractId === '') {
             return redirect()->back()

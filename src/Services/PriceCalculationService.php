@@ -38,7 +38,7 @@ class PriceCalculationService
         $item->setSum($priceSum + $pricePercentage);
     }
 
-    public function resolveBuybackMarketConfig(int $typeID): BuybackMarketConfig
+    public function resolveBuybackMarketConfig(int $typeID): ?BuybackMarketConfig
     {
         $marketConfig = BuybackMarketConfig::where('typeId', $typeID)->first();
 

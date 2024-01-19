@@ -47,6 +47,10 @@ class PriceCalculationHelper
 
     }
 
+    /**
+     * @param array $itemData
+     * @return int|null
+     */
     public static function calculateFinalVolume(array $itemData): ?int
     {
         $finalVolume = 0;

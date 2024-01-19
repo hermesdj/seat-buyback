@@ -26,7 +26,11 @@ use H4zz4rdDev\Seat\SeatBuyback\Exceptions\ItemParserBadFormatException;
 use H4zz4rdDev\Seat\SeatBuyback\Helpers;
 use H4zz4rdDev\Seat\SeatBuyback\Services\ItemService;
 use H4zz4rdDev\Seat\SeatBuyback\Services\SettingsService;
+use Illuminate\Contracts\View\Factory;
+use Illuminate\Foundation\Application;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Redirector;
 use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
 use RecursiveTree\Seat\PricesCore\Exceptions\PriceProviderException;
@@ -72,8 +76,10 @@ class BuybackController extends Controller
     }
 
     /**
+     * @param Request $request
+     * @return Application|Factory|View|Redirector|RedirectResponse
      */
-    public function checkItems(Request $request)
+    public function checkItems(Request $request): Application|Factory|View|Redirector|RedirectResponse
     {
         $request->validate([
             'items' => 'required',

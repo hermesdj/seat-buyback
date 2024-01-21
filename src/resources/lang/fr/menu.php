@@ -21,10 +21,10 @@
  */
 
 return [
-    'main_level' => 'Buyback',
+    'main_level' => 'Rachats',
     'sub-home-level' => 'Requête',
     'sub-item-level' => 'Gérer les articles',
     'sub-admin-level' => 'Paramètres',
     'sub-contract-level' => 'Contrats',
-    'sub-character-contracts-level' => 'Mes Buybacks'
+    'sub-character-contracts-level' => 'Mes Rachats'
 ];

@@ -71,7 +71,7 @@ return [
     'admin_discord_webhook_url_label' => 'URL',
     'admin_discord_webhook_url_description' => 'Set a Discord channel webhook url where the notifications will be send to',
     'admin_discord_webhook_status_label' => 'Status ',
-    'admin_discord_webhook_status_description' => 'Enable or Disabled Discord notifications',
+    'admin_discord_webhook_status_description' => 'Activer ou Désactiver les notifications Discord.',
     'admin_setting_bot_name_label' => 'Bot Name',
     'admin_setting_bot_name_description' => 'Under this name the notifications are posted into the discord channel. (Max Length: 32)',
     'admin_discord_webhook_color_label' => 'Border Color',

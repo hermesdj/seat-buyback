@@ -21,6 +21,6 @@
  */
 
 return [
-    'buyback_admin_permission_label' => 'Grants access to the Buyback AdminPanel',
-    'buyback_admin_permission_description' => 'Grants permission to administrate buyback market configs and general plugin settings.',
+    'buyback_admin_permission_label' => 'Accorde l'accès au Panneau administratif du Buyback',
+    'buyback_admin_permission_description' => 'Accorde l'autorisation d'administrer les configurations du Buyback et les paramètres généraux du plugin.',
 ];

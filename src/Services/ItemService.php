@@ -65,6 +65,8 @@ class ItemService
             throw new ItemParserBadFormatException("Could not parse provided string or item list is empty");
         }
 
+        Log::debug(print_r($parser_result->items, true));
+
         $priceProviderId = $this->settingsService->getPriceProviderId();
 
         if ($priceProviderId == null) {

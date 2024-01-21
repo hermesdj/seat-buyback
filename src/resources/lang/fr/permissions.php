@@ -3,7 +3,7 @@
 /*
  * This file is part of SeAT
  *
- * Copyright (C) 2015 to 2020  Leon Jacobs
+ * Copyright (C) 2015 to 2020 Leon Jacobs
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,16 +21,6 @@
  */
 
 return [
-
-    'languages' => [
-        [
-            'short' => 'en',
-            'full' => 'English',
-        ],
-        [
-            'short' => 'fr',
-            'full' => 'Français'
-        ]
-    ],
-
+    'buyback_admin_permission_label' => 'Grants access to the Buyback AdminPanel',
+    'buyback_admin_permission_description' => 'Grants permission to administrate buyback market configs and general plugin settings.',
 ];

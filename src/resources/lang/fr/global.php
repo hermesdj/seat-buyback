@@ -106,7 +106,7 @@ return [
     'admin_setting_button' => 'Mise à jour',
     'admin_setting_error' => 'Admin setting: :message could not be found! Please check your database records!',
     'admin_setting_key_error' => 'Admin setting key: :message could not be found! Please check your database records!',
-   'admin_select_placeholder' => 'Taper pour selectionner un objet',
+    'admin_select_placeholder' => 'Taper pour selectionner un objet',
     'admin_item_select_label' => 'Selectionner un objet',
     'admin_item_select_description' => 'Selectionner un objet que vous souhaitez ajouter à la configuration ci dessous.',
     'admin_item_percentage_label' => 'Pourcentage (%)',

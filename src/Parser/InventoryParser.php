@@ -173,4 +173,10 @@ class InventoryParser extends NewInventoryWindowParser
     {
         if ($groupID === null) $groupID = InvGroup::where("groupName", $match->group)->first()->groupID ?? null;
     }
+
+    protected static function parseBigNumber($number): ?float
+    {
+        if ($number === null) return null;
+        return floatval(str_replace(["’", " ", ","], "", $number));
+    }
 }

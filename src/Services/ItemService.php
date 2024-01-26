@@ -30,6 +30,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use RecursiveTree\Seat\PricesCore\Exceptions\PriceProviderException;
 use RecursiveTree\Seat\PricesCore\Facades\PriceProviderSystem;
+use stdClass;
 
 /**
  * Class ItemService
@@ -64,8 +65,6 @@ class ItemService
         if ($parser_result->items->isEmpty()) {
             throw new ItemParserBadFormatException("Could not parse provided string or item list is empty");
         }
-
-        Log::debug(print_r($parser_result->items, true));
 
         $priceProviderId = $this->settingsService->getPriceProviderId();
 
@@ -112,10 +111,9 @@ class ItemService
                 ->first();
 
             if (empty($marketConfig)) {
-                $marketConfig = [
-                    'percentage' => $this->settingsService->defaultPricesPercentage(),
-                    'marketOperationType' => $this->settingsService->defaultPricesMarketOperationType(),
-                ];
+                $marketConfig = new stdClass();
+                $marketConfig->percentage = $this->settingsService->defaultPricesPercentage();
+                $marketConfig->marketOperationType = $this->settingsService->defaultPricesMarketOperationType();
             }
 
             if (empty($result)) {
@@ -129,10 +127,8 @@ class ItemService
                 continue;
             }
 
-            Log::debug(print_r($result, true));
-
             if (!array_key_exists($result->groupID, $parsedItems)) {
-                Log::debug("Found item .$item->typeModel->typeName");
+                Log::debug("Found item .$item->typeModel->typeName" . print_r($marketConfig, true));
                 $parsedItems["parsed"][$key]["typeId"] = $item->typeModel->typeID;
                 $parsedItems["parsed"][$key]["typeName"] = $item->typeModel->typeName;
                 $parsedItems["parsed"][$key]["typeQuantity"] = $item->getAmount();
@@ -141,8 +137,8 @@ class ItemService
                 $parsedItems["parsed"][$key]["marketGroupName"] = $result->groupName;
                 $parsedItems["parsed"][$key]["volume"] = $result->volume;
                 $parsedItems["parsed"][$key]["marketConfig"] = [
-                    'percentage' => $marketConfig["percentage"],
-                    'marketOperationType' => $marketConfig["marketOperationType"]
+                    'percentage' => $marketConfig->percentage,
+                    'marketOperationType' => $marketConfig->marketOperationType
                 ];
             }
         }

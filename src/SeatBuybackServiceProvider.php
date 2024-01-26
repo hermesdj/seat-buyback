@@ -21,7 +21,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 namespace H4zz4rdDev\Seat\SeatBuyback;
 
-use H4zz4rdDev\Seat\SeatBuyback\Services\DiscordService;
 use H4zz4rdDev\Seat\SeatBuyback\Services\ItemService;
 use H4zz4rdDev\Seat\SeatBuyback\Services\PriceCalculationService;
 use H4zz4rdDev\Seat\SeatBuyback\Services\SettingsService;
@@ -51,6 +50,8 @@ class SeatBuybackServiceProvider extends AbstractSeatPlugin
 
     public function register(): void
     {
+        $this->mergeConfigFrom(__DIR__ . '/Config/notifications.alerts.php', 'notifications.alerts');
+
         $this->mergeConfigFrom(__DIR__ . '/Config/buyback.config.php', 'buyback.config');
         $this->mergeConfigFrom(__DIR__ . '/Config/buyback.locale.php', 'buyback.locale');
 
@@ -81,11 +82,6 @@ class SeatBuybackServiceProvider extends AbstractSeatPlugin
         // Settings Service
         $this->app->singleton(ItemService::class, function ($app) {
             return new ItemService($app->make(SettingsService::class), $app->make(PriceCalculationService::class));
-        });
-
-        // Discord Service
-        $this->app->singleton(DiscordService::class, function ($app) {
-            return new DiscordService($app->make(SettingsService::class));
         });
     }
 

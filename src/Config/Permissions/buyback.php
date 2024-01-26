@@ -22,15 +22,15 @@
 
 return [
     'view' => [
-        'label' => 'Grants access to the Buyback Request Panel',
-        'description' => 'This permission is needed if you wanna create buyback requests',
+        'label' => 'buyback::permissions.buyback_request_label',
+        'description' => 'buyback::permissions.buyback_request_desc',
     ],
     'contract' => [
-        'label' => 'Grants access to the Buyback Contract Panel',
-        'description' => 'Displays all current requested buybacks and let you manage them',
+        'label' => 'buyback::permissions.buyback_admin_view_label',
+        'description' => 'buyback::permissions.buyback_admin_view_desc',
     ],
     'admin' => [
-        'label' => 'Grants access to the Buyback Admin Panel',
-        'description' => 'Administrate buyback market configs and general plugin settings.',
+        'label' => 'buyback::permissions.buyback_admin_permission_label',
+        'description' => 'buyback::permissions.buyback_admin_permission_description'
     ]
 ];

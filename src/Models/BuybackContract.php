@@ -23,6 +23,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 namespace H4zz4rdDev\Seat\SeatBuyback\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Seat\Web\Models\User;
 
 /**
  * Class BuybackContract
@@ -58,4 +60,9 @@ class BuybackContract extends Model
      * @var array
      */
     protected $guarded = [];
+
+    public function issuer(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'issuer_id');
+    }
 }

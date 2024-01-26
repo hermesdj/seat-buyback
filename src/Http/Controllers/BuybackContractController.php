@@ -22,18 +22,14 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 namespace H4zz4rdDev\Seat\SeatBuyback\Http\Controllers;
 
-use H4zz4rdDev\Seat\SeatBuyback\Exceptions\DiscordServiceCurlException;
-use H4zz4rdDev\Seat\SeatBuyback\Exceptions\DiscordServiceWebhookUrlNotFoundException;
-use H4zz4rdDev\Seat\SeatBuyback\Exceptions\SettingsServiceException;
 use H4zz4rdDev\Seat\SeatBuyback\Models\BuybackContract;
-use H4zz4rdDev\Seat\SeatBuyback\Services\DiscordService;
+use H4zz4rdDev\Seat\SeatBuyback\Notifications\NotificationDispatcher;
 use H4zz4rdDev\Seat\SeatBuyback\Services\SettingsService;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
 use JsonException;
 use Seat\Web\Http\Controllers\Controller;
@@ -48,12 +44,9 @@ class BuybackContractController extends Controller
 
     private SettingsService $settingsService;
 
-    private DiscordService $discordService;
-
-    public function __construct(DiscordService $discordService, SettingsService $settingsService)
+    public function __construct(SettingsService $settingsService)
     {
         $this->settingsService = $settingsService;
-        $this->discordService = $discordService;
     }
 
     /**
@@ -62,6 +55,7 @@ class BuybackContractController extends Controller
     public function getHome(): View
     {
         $contracts = BuybackContract::where('contractStatus', '=', 0)
+            ->with('issuer')
             ->orderBy('created_at', 'desc')
             ->get();
 
@@ -75,15 +69,15 @@ class BuybackContractController extends Controller
      */
     public function getCharacterContracts(): Application|View|Factory
     {
+        $user = Auth::user();
 
-        //Todo Refactor contractIssuer to userID
         $openContracts = BuybackContract::where('contractStatus', '=', 0)
-            ->where('contractIssuer', '=', Auth::user()->name)
+            ->where('issuer_id', $user->id)
             ->orderBy('created_at', 'DESC')
             ->get();
 
         $closedContracts = BuybackContract::where('contractStatus', '=', 1)
-            ->where('contractIssuer', '=', Auth::user()->name)
+            ->where('issuer_id', $user->id)
             ->orderBy('created_at', 'DESC')
             ->get();
 
@@ -96,7 +90,6 @@ class BuybackContractController extends Controller
     /**
      * @param Request $request
      * @return RedirectResponse
-     * @throws SettingsServiceException
      * @throws JsonException
      */
     public function insertContract(Request $request): RedirectResponse
@@ -108,29 +101,18 @@ class BuybackContractController extends Controller
             'contractFinalPrice' => 'required'
         ]);
 
+        $user = Auth::user();
+
         $contract = new BuybackContract();
         $contract->contractId = $request->get('contractId');
-        $contract->contractIssuer = Auth::user()->name;
+        $contract->issuer_id = $user->id;
         $contract->contractData = $request->get('contractData');
         $contractFinalPrice = (int)$request->get('contractFinalPrice');
         $contract->save();
 
-        if ((bool)$this->settingsService->get("admin_discord_status")) {
-            try {
-                $this->discordService->sendMessage
-                (
-                    Auth::user()->name,
-                    Auth::user()->main_character_id,
-                    $contract->contractId,
-                    $contractFinalPrice,
-                    is_countable(json_decode((string)$contract->contractData, true, 512, JSON_THROW_ON_ERROR)['parsed']) ? count(json_decode((string)$contract->contractData, true, 512, JSON_THROW_ON_ERROR)['parsed']) : 0
-                );
-            } catch (DiscordServiceCurlException|DiscordServiceWebhookUrlNotFoundException|SettingsServiceException $e) {
-                Log::error("Discord error " . $e->getMessage());
-                return redirect()->back()
-                    ->with(['error' => trans('buyback::global.admin_discord_error_curl')]);
-            }
-        }
+        $itemCount = is_countable(json_decode((string)$contract->contractData, true, 512, JSON_THROW_ON_ERROR)['parsed']) ? count(json_decode((string)$contract->contractData, true, 512, JSON_THROW_ON_ERROR)['parsed']) : 0;
+
+        NotificationDispatcher::dispatchNewBuyback($contract->contractId, $contractFinalPrice, $itemCount);
 
         return redirect()->route('buyback.character.contracts')
             ->with('success', trans('buyback::global.contract_success_submit', ['id' => $request->get('contractId')]));
@@ -166,7 +148,7 @@ class BuybackContractController extends Controller
                 ->with(['error' => trans('buyback::global.error')]);
         }
 
-        $contract = BuybackContract::where('contractId', '=', $contractId)->first();
+        $contract = BuybackContract::where('contractId', $contractId)->first();
         if (!$contract->contractStatus) {
 
             $contract->contractStatus = 1;

@@ -39,7 +39,7 @@
                                 <h3 class="card-title"><b>{{ $contract->contractId }}</b>
                                     ( {{ count(json_decode($contract->contractData, true)["parsed"]) }} Items )
                                     | {{ date("d.m.Y", $contract->created_at->timestamp) }}
-                                    | <b>{{ $contract->contractIssuer }}</b>
+                                    | <b>{{ $contract->issuer->name }}</b>
                                     | <em>{{$contractFinalVolume}} m3</em>
                                     | <b><span class="isk-info">+{{ $contractFinalPrice }}</span> ISK</b>
                                 </h3>
@@ -83,7 +83,6 @@
             </div>
     </div>
     @endforeach
-    </div>
     <h5>{{ trans('buyback::global.my_contracts_closed_title') }}</h5>
     @if($closedContracts->isEmpty())
         <p>{{ trans('buyback::global.my_contracts_closed_error') }}</p>
@@ -105,7 +104,7 @@
                                         | {{ date("d.m.Y", $contract->created_at->timestamp) }}
                                         ( {{ count(json_decode($contract->contractData, true)["parsed"]) }} Items )
                                     </del>
-                                    | <b>{{ $contract->contractIssuer }}</b>
+                                    | <b>{{ $contract->issuer->name }}</b>
                                     - <b> Finished: {{ date("d.m.Y", $contract->updated_at->timestamp) }}</b></h3>
                             </button>
                         </div>

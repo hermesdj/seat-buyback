@@ -23,6 +23,7 @@
   "require": {
     "eveseat/web": "^5",
     "eveseat/eveapi": "^5",
+    "eveseat/services": "^5",
     "eveseat/notifications": "^5",
     "recursivetree/seat-prices-core": "^1",
     "recursivetree/seat-treelib": "^2.0"

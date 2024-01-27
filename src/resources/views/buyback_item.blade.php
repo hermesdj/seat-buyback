@@ -7,6 +7,12 @@
     <link rel="stylesheet" type="text/css" href="{{ asset('web/css/buyback.css') }}"/>
 @endpush
 
+@php
+    use Seat\Services\Settings\Profile;
+        $thousand_separator = Profile::get('thousand_seperator');
+        $decimal_separator = Profile::get('decimal_seperator');
+@endphp
+
 @section('full')
     <div class="row">
         <div class="col-6">
@@ -104,7 +110,7 @@
                                     <td class="align-middle">{{ $config->typeName}}</td>
                                     <td class="text-center align-middle">{!! $config->marketOperationType == 0 ? '<i class="fas fa-arrow-down"></i>' : '<i class="fas fa-arrow-up"></i>' !!}</td>
                                     <td class="text-center align-middle">{{ ($config->price <= 0) ? $config->percentage . " %" : "-" }}</td>
-                                    <td class="text-center align-middle">{{ ($config->price > 0) ? number_format($config->price,0,',', '.') . " ISK" : "-"}}</td>
+                                    <td class="text-center align-middle">{{ ($config->price > 0) ? number_format($config->price,0,$decimal_separator, $thousand_separator) . " ISK" : "-"}}</td>
                                     <td class="align-middle">{{ $config->groupName }}</td>
                                     <td class="text-center mb-4 mt-4 align-middle"><button class="btn btn-danger btn-xs form-control" id="submit" type="submit"><i class="fas fa-trash-alt"></i>{{ trans('buyback::global.admin_group_table_button') }}</button></td>
                                     </form>

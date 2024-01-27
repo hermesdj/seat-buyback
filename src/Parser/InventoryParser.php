@@ -17,7 +17,7 @@ class InventoryParser extends NewInventoryWindowParser
     /**
      * Modified for french compatibility
      */
-    protected const BIG_NUMBER_REGEXP = "(?:\d+(?:[’ ,]\d\d\d)*(?:\.\d\d)?)";
+    protected const BIG_NUMBER_REGEXP = "(?:\d+(?:[’\s+,]\d\d\d)*(?:\.\d\d)?)";
 
     /**
      * @param $text
@@ -27,6 +27,8 @@ class InventoryParser extends NewInventoryWindowParser
     static function parseItems($text, string $EveItemClass = EveItem::class): ParseResult
     {
         $text = preg_replace('~\R~u', "\n", $text);
+        $text = preg_replace('~\x{b3}~u', '3', $text);
+        $text = preg_replace('/\xc2\xa0/', ' ', $text);
 
         //from specific to broad
         $parsers = [

@@ -42,7 +42,7 @@ class BuybackMarketConfig extends Model
 
     public function getMarketOperator(): int
     {
-        return $this->marketOperationType ? -1 : 1;
+        return $this->marketOperationType ? 1 : -1;
     }
 
     /**

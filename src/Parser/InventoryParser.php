@@ -17,7 +17,7 @@ class InventoryParser extends NewInventoryWindowParser
     /**
      * Modified for french compatibility
      */
-    protected const BIG_NUMBER_REGEXP = "(?:\d+(?:[’\s+,]\d\d\d)*(?:\.\d\d)?)";
+    protected const BIG_NUMBER_REGEXP = "(?:\d+(?:[’\s+,]\d\d\d)*(?:[\.,]\d\d)?)";
 
     /**
      * @param $text
@@ -73,10 +73,10 @@ class InventoryParser extends NewInventoryWindowParser
             "(?:\t(?<category>\D[^\t]*))?",                               //category
             "(?:\t(?<size>\D[^\t]*)?)?",                                   //size. seems to be empty
             "(?:\t(?<slot>\D[^\t]*)?)?",                                   //slot
-            "(?:\t(?<volume>" . self::BIG_NUMBER_REGEXP . ") m3)?",         //volume
+            "(?:\t(?<volume>" . self::BIG_NUMBER_REGEXP . ")\sm.)?",         //volume
             "(?:\t(?<meta>" . self::BIG_NUMBER_REGEXP . ")?)?",              //meta level
             "(?:\t(?<tech>" . self::BIG_NUMBER_REGEXP . "|None))?",         //tech level
-            "(?:\t(?:(?<price>" . self::BIG_NUMBER_REGEXP . ") ISK)?)?",           //Est. price
+            "(?:\t(?:(?<price>" . self::BIG_NUMBER_REGEXP . ")\sISK)?)?",           //Est. price
             "$"                                                         //end
         ]);
 

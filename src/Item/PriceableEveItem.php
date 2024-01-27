@@ -22,7 +22,7 @@ class PriceableEveItem extends EveItem implements IPriceable
 
     public function setPrice(float $price): void
     {
-        $this->price = $price;
+        $this->price = $price / $this->getAmount();
     }
 
     public function setSum(float $sum): void

@@ -128,7 +128,6 @@ class ItemService
             }
 
             if (!array_key_exists($result->groupID, $parsedItems)) {
-                Log::debug("Found item .$item->typeModel->typeName" . print_r($marketConfig, true));
                 $parsedItems["parsed"][$key]["typeId"] = $item->typeModel->typeID;
                 $parsedItems["parsed"][$key]["typeName"] = $item->typeModel->typeName;
                 $parsedItems["parsed"][$key]["typeQuantity"] = $item->getAmount();

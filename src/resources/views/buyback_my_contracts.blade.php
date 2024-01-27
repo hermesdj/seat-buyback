@@ -7,6 +7,12 @@
     <link rel="stylesheet" type="text/css" href="{{ asset('web/css/buyback.css') }}"/>
 @endpush
 
+@php
+    use Seat\Services\Settings\Profile;
+        $thousand_separator = Profile::get('thousand_seperator');
+        $decimal_separator = Profile::get('decimal_seperator');
+@endphp
+
 @section('left')
     <div class="card">
         <div class="card-body">
@@ -21,10 +27,10 @@
         @foreach($openContracts as $contract)
             @php
                 $contractFinalPrice = number_format(H4zz4rdDev\Seat\SeatBuyback\Helpers\PriceCalculationHelper::calculateFinalPrice(
-                    json_decode($contract->contractData, true)["parsed"]),0,',', '.');
+                    json_decode($contract->contractData, true)["parsed"]),2,$decimal_separator, $thousand_separator);
 
                 $contractFinalVolume = number_format(H4zz4rdDev\Seat\SeatBuyback\Helpers\PriceCalculationHelper::calculateFinalVolume(
-                                                json_decode($contract->contractData, true)["parsed"]),0,',', '.');
+                                                json_decode($contract->contractData, true)["parsed"]),2,$decimal_separator, $thousand_separator);
             @endphp
             <div class="card">
                 <div class="card-header border-secondary" data-toggle="collapse"
@@ -68,7 +74,8 @@
                                     % )
                                 </td>
                                 <td class="isk-td"><span
-                                            class="isk-info">{{ number_format($item->typeSum,0,',', '.') }}</span> ISK
+                                            class="isk-info">{{ number_format($item->typeSum,2,$decimal_separator, $thousand_separator) }}</span>
+                                    ISK
                                 </td>
                             </tr>
                         @endforeach
@@ -124,7 +131,7 @@
                                     % )
                                 </td>
                                 <td class="isk-td"><span
-                                            class="isk-info">{{ number_format($item->typeSum,0,',', '.') }}</span> {{ trans('buyback::global.currency') }}
+                                            class="isk-info">{{ number_format($item->typeSum,2,$decimal_separator, $thousand_separator) }}</span> {{ trans('buyback::global.currency') }}
                                 </td>
                             </tr>
                         @endforeach
@@ -132,11 +139,11 @@
                             <td class="align-centered"><b>Summary</b></td>
                             <td class="align-centered isk-td">
                                 <em>{{number_format(H4zz4rdDev\Seat\SeatBuyback\Helpers\PriceCalculationHelper::calculateFinalVolume(
-                                                json_decode($contract->contractData, true)["parsed"]),0,',', '.')}}
+                                                json_decode($contract->contractData, true)["parsed"]),2,$decimal_separator, $thousand_separator)}}
                                     m3</em>
                                 <b><span class="isk-info">+
                                             {{ number_format(H4zz4rdDev\Seat\SeatBuyback\Helpers\PriceCalculationHelper::calculateFinalPrice(
-                                                json_decode($contract->contractData, true)["parsed"]),0,',', '.') }}</span> {{ trans('buyback::global.currency') }}
+                                                json_decode($contract->contractData, true)["parsed"]),2,$decimal_separator, $thousand_separator) }}</span> {{ trans('buyback::global.currency') }}
                                 </b></td>
                         </tr>
                         </tbody>

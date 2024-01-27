@@ -7,6 +7,12 @@
     <link rel="stylesheet" type="text/css" href="{{ asset('web/css/buyback.css') }}"/>
 @endpush
 
+@php
+    use Seat\Services\Settings\Profile;
+        $thousand_separator = Profile::get('thousand_seperator');
+        $decimal_separator = Profile::get('decimal_seperator');
+@endphp
+
 @if(!empty($eve_item_data))
     @section('left')
         <div class="card">
@@ -15,21 +21,28 @@
                 <p>{{ trans('buyback::global.step_two_introduction') }}</p>
                 <table class="table">
                     <thead class="thead bg-primary">
-                    <th scope="col" class="align-centered" colspan="2">{{ trans('buyback::global.step_two_item_table_title') }}</th>
+                    <th scope="col" class="align-centered"
+                        colspan="2">{{ trans('buyback::global.step_two_item_table_title') }}</th>
                     </thead>
                     <tbody>
                     @foreach($eve_item_data["parsed"] as $item)
                         <tr>
                             <td><img src="https://images.evetech.net/types/{{ $item["typeId"] }}/icon?size=32"/>
-                                <b>{{ number_format($item["typeQuantity"],0,',', '.') }} x {{ $item["typeName"] }}</b>
-                                ( {!! $item["marketConfig"]["marketOperationType"] == 0 ? '-' : '+' !!}{{$item["marketConfig"]["percentage"] }}% )
+                                <b>{{ number_format($item["typeQuantity"],0,$decimal_separator, $thousand_separator) }}
+                                    x {{ $item["typeName"] }}</b>
+                                ( {!! $item["marketConfig"]["marketOperationType"] == 0 ? '-' : '+' !!}{{$item["marketConfig"]["percentage"] }}
+                                % )
                             </td>
-                            <td class="isk-td"><span class="isk-info">+{{ number_format($item["typeSum"],0,',', '.') }}</span> {{ trans('buyback::global.currency') }}</td>
+                            <td class="isk-td"><span
+                                        class="isk-info">+{{ number_format($item["typeSum"],2,$decimal_separator, $thousand_separator) }}</span> {{ trans('buyback::global.currency') }}
+                            </td>
                         </tr>
                     @endforeach
                     <tr>
                         <td class="align-centered"><b>{{ trans('buyback::global.step_two_summary') }}</b></td>
-                        <td class="align-centered isk-td"><b><span class="isk-info">+{{ number_format($finalPrice,0,',', '.') }}</span> {{ trans('buyback::global.currency') }}</b></td>
+                        <td class="align-centered isk-td"><b><span
+                                        class="isk-info">+{{ number_format($finalPrice,2,$decimal_separator, $thousand_separator) }}</span> {{ trans('buyback::global.currency') }}
+                            </b></td>
                     </tr>
                     </tbody>
                 </table>
@@ -49,7 +62,8 @@
                             @foreach($eve_item_data["ignored"] as $item)
                                 <tr>
                                     <td><img src="https://images.evetech.net/types/{{ $item["ItemId"] }}/icon?size=32">
-                                        {{ number_format($item["ItemQuantity"],0,',', '.') }} x {{ $item["ItemName"] }}
+                                        {{ number_format($item["ItemQuantity"],0,$decimal_separator, $thousand_separator) }}
+                                        x {{ $item["ItemName"] }}
                                     </td>
                                 </tr>
                             @endforeach
@@ -65,7 +79,8 @@
             <div class="card-body">
                 <label for="items">{{ trans('buyback::global.step_three_label') }}</label>
                 <p>{{ trans('buyback::global.step_three_introduction') }}</p>
-                <form action="{{ route('buyback.contracts.insert') }}" method="post" id="contract-insert" name="contract-insert">
+                <form action="{{ route('buyback.contracts.insert') }}" method="post" id="contract-insert"
+                      name="contract-insert">
                     {{ csrf_field() }}
                     <table class="table">
                         <tbody>
@@ -75,11 +90,15 @@
                         </tr>
                         <tr>
                             <td>{{ trans('buyback::global.step_three_contract_to') }}*</td>
-                            <td><b onClick="SelfCopy(this)" data-container="body" data-toggle="popover" data-placement="top" data-content="Copied!">{{ $contractTo }}</b></td>
+                            <td><b onClick="SelfCopy(this)" data-container="body" data-toggle="popover"
+                                   data-placement="top" data-content="Copied!">{{ $contractTo }}</b></td>
                         </tr>
                         <tr>
                             <td>{{ trans('buyback::global.step_three_contract_receive') }}*</td>
-                            <td><b onClick="SelfCopy(this)" data-container="body" data-toggle="popover" data-placement="top" data-content="Copied!"><span class="isk-info">{{ number_format($finalPrice,0,',', '.') }}</span></b> <b>{{ trans('buyback::global.currency') }}</b></td>
+                            <td><b onClick="SelfCopy(this)" data-container="body" data-toggle="popover"
+                                   data-placement="top" data-content="Copied!"><span
+                                            class="isk-info">{{ number_format($finalPrice,2,$decimal_separator, $thousand_separator) }}</span></b>
+                                <b>{{ trans('buyback::global.currency') }}</b></td>
                         </tr>
                         <tr>
                             <td>{{ trans('buyback::global.step_three_contract_expiration') }}</td>
@@ -87,19 +106,23 @@
                         </tr>
                         <tr>
                             <td>{{ trans('buyback::global.step_three_contract_description') }}*</td>
-                            <td><b onClick="SelfCopy(this)" data-container="body" data-toggle="popover" data-placement="top" data-content="Copied!">{{ $contractId }}</b></td>
+                            <td><b onClick="SelfCopy(this)" data-container="body" data-toggle="popover"
+                                   data-placement="top" data-content="Copied!">{{ $contractId }}</b></td>
                             <input type="hidden" value="{{ $contractId }}" name="contractId" id="contractId">
                         </tr>
-                        <input type="hidden" value="{{ json_encode($eve_item_data) }}" name="contractData" id="contractId">
+                        <input type="hidden" value="{{ json_encode($eve_item_data) }}" name="contractData"
+                               id="contractId">
                         <input type="hidden" value="99" name="contractItemCount" id="contractItemCount">
-                        <input type="hidden" value="{{ $finalPrice }}" name="contractFinalPrice" id="contractFinalPrice">
+                        <input type="hidden" value="{{ $finalPrice }}" name="contractFinalPrice"
+                               id="contractFinalPrice">
                         </tbody>
                     </table>
                     <div>
                         <span><b>{{ trans('buyback::global.step_three_contract_tip_title') }}</b></span>
                         <p>{{ trans('buyback::global.step_three_contract_tip') }}</p>
                     </div>
-                    <button type="submit" class="btn btn-primary mb-2">{{ trans('buyback::global.step_three_button') }}</button>
+                    <button type="submit"
+                            class="btn btn-primary mb-2">{{ trans('buyback::global.step_three_button') }}</button>
                 </form>
             </div>
         </div>
@@ -108,8 +131,7 @@
 
 @push('javascript')
     <script>
-        function SelfCopy(object)
-        {
+        function SelfCopy(object) {
             navigator.clipboard.writeText(object.innerText);
 
             $(object).popover().click(function () {

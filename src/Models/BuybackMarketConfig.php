@@ -23,6 +23,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 namespace H4zz4rdDev\Seat\SeatBuyback\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Seat\Eveapi\Models\Sde\InvType;
 
 /**
  * Class BuybackMarketConfig
@@ -31,9 +33,12 @@ use Illuminate\Database\Eloquent\Model;
  */
 class BuybackMarketConfig extends Model
 {
-    public float $price = 0;
-    public int $percentage = 0;
-    public int $marketOperationType = 0;
+    protected $fillable = [
+        'marketOperationType',
+        'percentage',
+        'price',
+        'typeId'
+    ];
 
     public function getPercentage(): float
     {
@@ -72,4 +77,9 @@ class BuybackMarketConfig extends Model
      * @var array
      */
     protected $guarded = [];
+
+    public function invType(): BelongsTo
+    {
+        return $this->belongsTo(InvType::class, 'typeId', 'typeID');
+    }
 }

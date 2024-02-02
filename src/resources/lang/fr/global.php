@@ -70,7 +70,7 @@ return [
     'admin_discord_first_title' => 'Webhook',
     'admin_discord_webhook_url_label' => 'URL',
     'admin_discord_webhook_url_description' => 'Sélectionnez un channel discord webhook ou sera envoyé les notifications :',
-                                                //Set a Discord channel webhook url where the notifications will be send to 
+    //Set a Discord channel webhook url where the notifications will be send to
     'admin_discord_webhook_status_label' => 'Statut ',
     'admin_discord_webhook_status_description' => 'Activer ou Désactiver les notifications Discord.',
     'admin_setting_bot_name_label' => 'Nom du bot',
@@ -129,5 +129,10 @@ return [
     'my_contracts_open_title' => ' Contrats Ouvert',
     'my_contracts_open_error' => 'Pas de contrat ouvert trouvé',
     'my_contracts_closed_title' => 'Contrat Cloturé',
-    'my_contracts_closed_error' => 'Pas de contrat cloturer trouvé'
+    'my_contracts_closed_error' => 'Pas de contrat cloturer trouvé',
+
+    'items' => ':count Objets',
+    'final_volume' => ':volume m3',
+    'final_price' => ':price ISK',
+    'item_exchange' => 'Troc Privé'
 ];

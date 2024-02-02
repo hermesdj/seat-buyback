@@ -71,20 +71,17 @@ class BuybackContractController extends Controller
     {
         $user = Auth::user();
 
-        $openContracts = BuybackContract::where('contractStatus', '=', 0)
+        $openContracts = BuybackContract::where('contractStatus', 0)
             ->where('issuer_id', $user->id)
             ->orderBy('created_at', 'DESC')
             ->get();
 
-        $closedContracts = BuybackContract::where('contractStatus', '=', 1)
+        $closedContracts = BuybackContract::where('contractStatus', 1)
             ->where('issuer_id', $user->id)
             ->orderBy('created_at', 'DESC')
             ->get();
 
-        return view('buyback::buyback_my_contracts', [
-            'openContracts' => $openContracts,
-            'closedContracts' => $closedContracts
-        ]);
+        return view('buyback::buyback_my_contracts', compact('openContracts', 'closedContracts'));
     }
 
     /**

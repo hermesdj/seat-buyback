@@ -29,4 +29,9 @@ class PriceableEveItem extends EveItem implements IPriceable
     {
         $this->sum = $sum;
     }
+
+    public function getSum(): float
+    {
+        return $this->sum ?? 0;
+    }
 }

@@ -27,7 +27,6 @@ use H4zz4rdDev\Seat\SeatBuyback\Models\BuybackMarketConfig;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
-use Seat\Eveapi\Models\Sde\InvType;
 use Seat\Web\Http\Controllers\Controller;
 
 /**
@@ -35,16 +34,16 @@ use Seat\Web\Http\Controllers\Controller;
  *
  * @package H4zz4rdDev\Seat\SeatBuyback\Http\Controllers
  */
-class BuybackItemController extends Controller {
+class BuybackItemController extends Controller
+{
 
     /**
      * @return View
      */
     public function getHome(): View
     {
-        return view('buyback::buyback_item', [
-            'marketConfigs' => BuybackMarketConfig::orderBy('typeName', 'asc')->get(),
-        ]);
+        $marketConfigs = BuybackMarketConfig::with('invType')->get();
+        return view('buyback::buyback_item', compact('marketConfigs'));
     }
 
     /**
@@ -55,10 +54,10 @@ class BuybackItemController extends Controller {
     {
 
         $request->validate([
-            'admin-market-typeId'       => 'required|max:255',
-            'admin-market-operation'    => 'required',
-            'admin-market-percentage'   => 'required|numeric|between:0,99.99',
-            'admin-market-price'        => 'required|numeric'
+            'admin-market-typeId' => 'required|max:255',
+            'admin-market-operation' => 'required',
+            'admin-market-percentage' => 'required|numeric|between:0,99.99',
+            'admin-market-price' => 'required|numeric'
         ]);
 
         $item = BuybackMarketConfig::where('typeId', (int)$request->get('admin-market-typeId'))->first();
@@ -68,17 +67,14 @@ class BuybackItemController extends Controller {
                 ->with(['error' => trans('buyback::global.admin_error_config') . $item->typeId]);
         }
 
-        $invType = InvType::where('typeID', (int)$request->get('admin-market-typeId'))->first();
-
-        BuybackMarketConfig::insert([
+        $item = new BuybackMarketConfig([
             'typeId' => (int)$request->get('admin-market-typeId'),
-            'typeName' => (string)$invType->typeName,
             'marketOperationType' => (int)$request->get('admin-market-operation'),
-            'groupId' => (int)$invType->groupID,
-            'groupName' => (string)$invType->group->groupName,
             'percentage' => (int)$request->get('admin-market-percentage'),
             'price' => (int)$request->get("admin-market-price")
         ]);
+
+        $item->save();
 
         return redirect()->route('buyback.item')
             ->with('success', trans('buyback::global.admin_success_market_add'));

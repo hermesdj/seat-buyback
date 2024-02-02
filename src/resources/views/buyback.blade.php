@@ -20,10 +20,11 @@
                 <div class="form-group">
                     <label for="items">{{ trans('buyback::global.step_one_label') }}</label>
                     <p>{{ trans('buyback::global.step_one_introduction') }}</p>
-                    <textarea class="w-100" name="items" rows="10"></textarea>
+                    <textarea id="items" class="w-100" name="items" rows="10"></textarea>
                     <p><b>{{ trans('buyback::global.max_allowed_items') }} </b>{{ $maxAllowedItems }}</p>
                 </div>
-                <button type="submit" onclick="on()" class="btn btn-primary" form="item-check">{{ trans('buyback::global.step_one_button') }}</button>
+                <button type="submit" onclick="on()" class="btn btn-primary"
+                        form="item-check">{{ trans('buyback::global.step_one_button') }}</button>
             </form>
         </div>
     </div>

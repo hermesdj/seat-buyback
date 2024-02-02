@@ -131,7 +131,7 @@ class ItemService
                 $parsedItems["parsed"][$key]["typeId"] = $item->typeModel->typeID;
                 $parsedItems["parsed"][$key]["typeName"] = $item->typeModel->typeName;
                 $parsedItems["parsed"][$key]["typeQuantity"] = $item->getAmount();
-                $parsedItems["parsed"][$key]["typeSum"] = $item->sum;
+                $parsedItems["parsed"][$key]["typeSum"] = $item->getSum();
                 $parsedItems["parsed"][$key]["groupId"] = $item->typeModel->groupID;
                 $parsedItems["parsed"][$key]["marketGroupName"] = $result->groupName;
                 $parsedItems["parsed"][$key]["volume"] = $result->volume;

@@ -8,9 +8,15 @@
 @endpush
 
 @php
-    use Seat\Services\Settings\Profile;
-        $thousand_separator = Profile::get('thousand_seperator');
-        $decimal_separator = Profile::get('decimal_seperator');
+    use H4zz4rdDev\Seat\SeatBuyback\Helpers\PriceCalculationHelper;use Seat\Services\Settings\Profile;
+
+    $thousand_separator = Profile::get('thousand_seperator');
+    $decimal_separator = Profile::get('decimal_seperator');
+
+    $finalPrice = number_format(PriceCalculationHelper::calculateFinalPrice(
+                    $eve_item_data["parsed"]),2,$decimal_separator, $thousand_separator);
+    $finalVolume = number_format(PriceCalculationHelper::calculateFinalVolume(
+                                        $eve_item_data["parsed"]),2,$decimal_separator, $thousand_separator);
 @endphp
 
 @if(!empty($eve_item_data))
@@ -21,29 +27,22 @@
                 <p>{{ trans('buyback::global.step_two_introduction') }}</p>
                 <table class="table">
                     <thead class="thead bg-primary">
-                    <th scope="col" class="align-centered"
-                        colspan="2">{{ trans('buyback::global.step_two_item_table_title') }}</th>
+                    <tr>
+                        <th scope="col" class="align-centered"
+                            colspan="2">{{ trans('buyback::global.step_two_item_table_title') }}</th>
+                    </tr>
                     </thead>
                     <tbody>
                     @foreach($eve_item_data["parsed"] as $item)
-                        <tr>
-                            <td><img src="https://images.evetech.net/types/{{ $item["typeId"] }}/icon?size=32"/>
-                                <b>{{ number_format($item["typeQuantity"],0,$decimal_separator, $thousand_separator) }}
-                                    x {{ $item["typeName"] }}</b>
-                                ( {!! $item["marketConfig"]["marketOperationType"] == 0 ? '-' : '+' !!}{{$item["marketConfig"]["percentage"] }}
-                                % )
-                            </td>
-                            <td class="isk-td"><span
-                                        class="isk-info">+{{ number_format($item["typeSum"],2,$decimal_separator, $thousand_separator) }}</span> {{ trans('buyback::global.currency') }}
-                            </td>
-                        </tr>
+                        @include('buyback::partials.contract-row', [
+                            'typeId' => $item["typeId"],
+                            'quantity' => $item["typeQuantity"],
+                            'typeName' => $item["typeName"],
+                            'marketOperationType' => $item["marketConfig"]["marketOperationType"],
+                            'percentage' => $item["marketConfig"]["percentage"],
+                            'price' => number_format($item["typeSum"],2,$decimal_separator, $thousand_separator)])
                     @endforeach
-                    <tr>
-                        <td class="align-centered"><b>{{ trans('buyback::global.step_two_summary') }}</b></td>
-                        <td class="align-centered isk-td"><b><span
-                                        class="isk-info">+{{ number_format($finalPrice,2,$decimal_separator, $thousand_separator) }}</span> {{ trans('buyback::global.currency') }}
-                            </b></td>
-                    </tr>
+                    @include('buyback::partials.contract-footer', ['finalPrice' => $finalPrice, 'finalVolume' => $finalVolume])
                     </tbody>
                 </table>
             </div>
@@ -54,16 +53,18 @@
                     <div class="form-group">
                         <table class="table table-borderless">
                             <thead class="thead">
-                            <th class="align-centered bg-red">
-                                <span class="ml-2"><i class='fas fa-ban'></i>{{ trans('buyback::global.step_two_ignored_table_title') }}</span>
-                            </th>
+                            <tr>
+                                <th class="align-centered bg-red">
+                                    <span class="ml-2"><i class='fas fa-ban'></i>{{ trans('buyback::global.step_two_ignored_table_title') }}</span>
+                                </th>
+                            </tr>
                             </thead>
                             <tbody>
                             @foreach($eve_item_data["ignored"] as $item)
                                 <tr>
-                                    <td><img src="https://images.evetech.net/types/{{ $item["ItemId"] }}/icon?size=32">
-                                        {{ number_format($item["ItemQuantity"],0,$decimal_separator, $thousand_separator) }}
-                                        x {{ $item["ItemName"] }}
+                                    <td>
+                                        <b>x{{ number_format($item["ItemQuantity"],0,$decimal_separator, $thousand_separator) }}</b>
+                                        @include('web::partials.type', ['type_id' => $item["ItemId"], 'type_name' => ucwords($item["ItemName"])])
                                     </td>
                                 </tr>
                             @endforeach
@@ -81,46 +82,18 @@
                 <p>{{ trans('buyback::global.step_three_introduction') }}</p>
                 <form action="{{ route('buyback.contracts.insert') }}" method="post" id="contract-insert"
                       name="contract-insert">
-                    {{ csrf_field() }}
-                    <table class="table">
-                        <tbody>
-                        <tr>
-                            <td>{{ trans('buyback::global.step_three_contract_type') }}</td>
-                            <td><b>Item Exchange</b></td>
-                        </tr>
-                        <tr>
-                            <td>{{ trans('buyback::global.step_three_contract_to') }}*</td>
-                            <td><b onClick="SelfCopy(this)" data-container="body" data-toggle="popover"
-                                   data-placement="top" data-content="Copied!">{{ $contractTo }}</b></td>
-                        </tr>
-                        <tr>
-                            <td>{{ trans('buyback::global.step_three_contract_receive') }}*</td>
-                            <td><b onClick="SelfCopy(this)" data-container="body" data-toggle="popover"
-                                   data-placement="top" data-content="Copied!"><span
-                                            class="isk-info">{{ number_format($finalPrice,2,$decimal_separator, $thousand_separator) }}</span></b>
-                                <b>{{ trans('buyback::global.currency') }}</b></td>
-                        </tr>
-                        <tr>
-                            <td>{{ trans('buyback::global.step_three_contract_expiration') }}</td>
-                            <td><b>{{ $contractExpiration }}</b></td>
-                        </tr>
-                        <tr>
-                            <td>{{ trans('buyback::global.step_three_contract_description') }}*</td>
-                            <td><b onClick="SelfCopy(this)" data-container="body" data-toggle="popover"
-                                   data-placement="top" data-content="Copied!">{{ $contractId }}</b></td>
-                            <input type="hidden" value="{{ $contractId }}" name="contractId" id="contractId">
-                        </tr>
-                        <input type="hidden" value="{{ json_encode($eve_item_data) }}" name="contractData"
-                               id="contractId">
-                        <input type="hidden" value="99" name="contractItemCount" id="contractItemCount">
-                        <input type="hidden" value="{{ $finalPrice }}" name="contractFinalPrice"
-                               id="contractFinalPrice">
-                        </tbody>
-                    </table>
+                    @csrf
+                    @include('buyback::partials.contract-summary')
                     <div>
                         <span><b>{{ trans('buyback::global.step_three_contract_tip_title') }}</b></span>
                         <p>{{ trans('buyback::global.step_three_contract_tip') }}</p>
                     </div>
+                    <input type="hidden" value="{{ $contractId }}" name="contractId" id="contractId">
+                    <input type="hidden" value="{{ json_encode($eve_item_data) }}" name="contractData"
+                           id="contractId">
+                    <input type="hidden" value="99" name="contractItemCount" id="contractItemCount">
+                    <input type="hidden" value="{{ $finalPrice }}" name="contractFinalPrice"
+                           id="contractFinalPrice">
                     <button type="submit"
                             class="btn btn-primary mb-2">{{ trans('buyback::global.step_three_button') }}</button>
                 </form>
@@ -128,17 +101,3 @@
         </div>
     @stop
 @endif
-
-@push('javascript')
-    <script>
-        function SelfCopy(object) {
-            navigator.clipboard.writeText(object.innerText);
-
-            $(object).popover().click(function () {
-                setTimeout(function () {
-                    $(object).popover('hide');
-                }, 1000);
-            });
-        }
-    </script>
-@endpush

@@ -128,5 +128,9 @@ return [
     'my_contracts_open_title' => 'Open Contracts',
     'my_contracts_open_error' => 'No open contracts found',
     'my_contracts_closed_title' => 'Closed Contracts',
-    'my_contracts_closed_error' => 'No closed contracts found'
+    'my_contracts_closed_error' => 'No closed contracts found',
+    'items' => ':count Items',
+    'final_volume' => ':volume m3',
+    'final_price' => ':price ISK',
+    'item_exchange' => 'Item Exchange'
 ];

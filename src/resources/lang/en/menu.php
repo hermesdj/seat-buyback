@@ -26,5 +26,6 @@ return [
     'sub-item-level' => 'Manage Items',
     'sub-admin-level' => 'Settings',
     'sub-contract-level' => 'Contracts',
-    'sub-character-contracts-level' => 'My Buybacks'
+    'sub-character-contracts-level' => 'My Buybacks',
+    'sub-public-item-level' => 'View Items'
 ];

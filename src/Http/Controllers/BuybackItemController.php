@@ -36,6 +36,10 @@ use Seat\Web\Http\Controllers\Controller;
  */
 class BuybackItemController extends Controller
 {
+    public function publicItems(): View {
+        $marketConfigs = BuybackMarketConfig::with('invType')->get();
+        return view('buyback::public_items', compact('marketConfigs'));
+    }
 
     /**
      * @return View

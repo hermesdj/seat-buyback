@@ -43,6 +43,13 @@ return [
                 'permission' => 'buyback.view'
             ],
             [
+                'name' => 'buyback-public-item-sub-menu',
+                'label' => 'buyback::menu.sub-public-item-level',
+                'icon' => 'fas fa-shopping-cart',
+                'route' => 'buyback.item.public',
+                'permission' => 'buyback.view'
+            ],
+            [
                 'name' => 'buyback-contract-sub-menu',
                 'label' => 'buyback::menu.sub-contract-level',
                 'icon' => 'fas fa-th-list',

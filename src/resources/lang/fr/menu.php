@@ -26,5 +26,6 @@ return [
     'sub-item-level' => 'Gérer les articles',
     'sub-admin-level' => 'Paramètres',
     'sub-contract-level' => 'Contrats',
-    'sub-character-contracts-level' => 'Mes Rachats'
+    'sub-character-contracts-level' => 'Mes Rachats',
+    'sub-public-item-level' => 'Voir Articles'
 ];

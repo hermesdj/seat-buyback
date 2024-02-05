@@ -72,8 +72,12 @@ Route::group([
 
             Route::prefix('items')
                 ->group(function (): void {
-                    // Show items page
                     Route::get('/')
+                        ->name('buyback.item.public')
+                        ->uses('BuybackItemController@publicItems');
+
+                    // Show items page
+                    Route::get('/config')
                         ->name('buyback.item')
                         ->uses('BuybackItemController@getHome');
 

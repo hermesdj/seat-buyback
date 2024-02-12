@@ -24,12 +24,12 @@ namespace H4zz4rdDev\Seat\SeatBuyback\Services;
 
 use H4zz4rdDev\Seat\SeatBuyback\Exceptions\ItemParserBadFormatException;
 use H4zz4rdDev\Seat\SeatBuyback\Item\PriceableEveItem;
-use H4zz4rdDev\Seat\SeatBuyback\Parser\InventoryParser;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use RecursiveTree\Seat\PricesCore\Exceptions\PriceProviderException;
 use RecursiveTree\Seat\PricesCore\Facades\PriceProviderSystem;
+use RecursiveTree\Seat\TreeLib\Parser\Parser;
 use stdClass;
 
 /**
@@ -60,7 +60,7 @@ class ItemService
             throw new ItemParserBadFormatException("Empty string not supported");
         }
 
-        $parser_result = InventoryParser::parseItems($item_string, PriceableEveItem::class);
+        $parser_result = Parser::parseItems($item_string, PriceableEveItem::class);
 
         if ($parser_result->items->isEmpty()) {
             throw new ItemParserBadFormatException("Could not parse provided string or item list is empty");

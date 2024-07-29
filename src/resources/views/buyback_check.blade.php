@@ -13,8 +13,8 @@
     $thousand_separator = Profile::get('thousand_seperator');
     $decimal_separator = Profile::get('decimal_seperator');
 
-    $finalPrice = number_format(PriceCalculationHelper::calculateFinalPrice(
-                    $eve_item_data["parsed"]),2,$decimal_separator, $thousand_separator);
+    $price = PriceCalculationHelper::calculateFinalPrice($eve_item_data["parsed"]);
+    $finalPrice = number_format($price,2,$decimal_separator, $thousand_separator);
     $finalVolume = number_format(PriceCalculationHelper::calculateFinalVolume(
                                         $eve_item_data["parsed"]),2,$decimal_separator, $thousand_separator);
 @endphp
@@ -92,7 +92,7 @@
                     <input type="hidden" value="{{ json_encode($eve_item_data) }}" name="contractData"
                            id="contractId">
                     <input type="hidden" value="99" name="contractItemCount" id="contractItemCount">
-                    <input type="hidden" value="{{ $finalPrice }}" name="contractFinalPrice"
+                    <input type="hidden" value="{{ $price }}" name="contractFinalPrice"
                            id="contractFinalPrice">
                     <button type="submit"
                             class="btn btn-primary mb-2">{{ trans('buyback::global.step_three_button') }}</button>

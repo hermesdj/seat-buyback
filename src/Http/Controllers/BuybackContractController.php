@@ -104,7 +104,7 @@ class BuybackContractController extends Controller
         $contract->contractId = $request->get('contractId');
         $contract->issuer_id = $user->id;
         $contract->contractData = $request->get('contractData');
-        $contractFinalPrice = (int)$request->get('contractFinalPrice');
+        $contractFinalPrice = (float)$request->get('contractFinalPrice');
         $contract->save();
 
         $itemCount = is_countable(json_decode((string)$contract->contractData, true, 512, JSON_THROW_ON_ERROR)['parsed']) ? count(json_decode((string)$contract->contractData, true, 512, JSON_THROW_ON_ERROR)['parsed']) : 0;
